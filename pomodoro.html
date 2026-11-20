@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pomodoro Study Timer & Task List</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Animated multi-color background */
+    @keyframes bgShift {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .animated-bg {
+      background: linear-gradient(
+        -45deg,
+        #0f172a,
+        #311042,
+        #0f3b4c,
+        #1e1b4b,
+        #3b1528
+      );
+      background-size: 350% 350%;
+      animation: bgShift 14s ease infinite;
+    }
+
+    /* Subtle card vibration on hover */
+    @keyframes cardVibrate {
+      0%, 100% {
+        transform: translate(0, 0) rotate(0deg);
+      }
+      20% {
+        transform: translate(-2px, 1px) rotate(-0.4deg);
+      }
+      40% {
+        transform: translate(2px, -1px) rotate(0.4deg);
+      }
+      60% {
+        transform: translate(-2px, -1px) rotate(-0.3deg);
+      }
+      80% {
+        transform: translate(2px, 1px) rotate(0.3deg);
+      }
+    }
+
+    .card-vibrate:hover {
+      animation: cardVibrate 0.35s ease-in-out;
+    }
+
+    /* Top gradient strip inside each card */
+    .card-accent-indigo::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #6366f1, #22d3ee, #ec4899);
+    }
+
+    .card-accent-pink::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #ec4899, #a855f7, #38bdf8);
+    }
+  </style>
+</head>
+<body class="min-h-screen animated-bg text-slate-100 flex items-center justify-center p-4">
+  <main class="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- CARD 1: Study Timer -->
+    <section class="relative overflow-hidden card-accent-indigo card-vibrate bg-slate-900/80 backdrop-blur-lg border border-white/15 border-t-white/25 hover:border-indigo-400/50 shadow-[0_0_25px_rgba(99,102,241,0.2)] hover:shadow-[0_0_35px_rgba(99,102,241,0.4)] rounded-2xl p-6 flex flex-col justify-between transition-all duration-300">
+      <div>
+        <div class="flex items-center justify-between gap-2 mb-6">
+          <h1 class="text-lg font-semibold tracking-tight">Pomodoro Study Timer</h1>
+          <span id="mode-label" class="text-xs px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 font-medium transition-all duration-300">
+            Focus
+          </span>
+        </div>
+
+        <!-- Mode Buttons -->
+        <div class="grid grid-cols-3 gap-2 bg-slate-950/80 p-1 rounded-xl mb-6 text-xs">
+          <button type="button" data-mode="focus" class="mode-btn py-2 rounded-lg bg-indigo-600 text-white font-medium transition-all duration-200 active:scale-95">
+            Focus
+          </button>
+          <button type="button" data-mode="short" class="mode-btn py-2 rounded-lg text-slate-400 hover:text-white transition-all duration-200 active:scale-95">
+            Short Break
+          </button>
+          <button type="button" data-mode="long" class="mode-btn py-2 rounded-lg text-slate-400 hover:text-white transition-all duration-200 active:scale-95">
+            Long Break
+          </button>
+        </div>
+
+        <!-- Countdown Display -->
+        <div class="text-center py-6">
+          <div id="timer-display" class="text-6xl font-bold tabular-nums tracking-tight text-white transition-transform duration-300">
+            25:00
+          </div>
+          <p class="text-xs text-slate-300/80 mt-2">Stay consistent, take short breaks.</p>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex items-center gap-3 pt-4 border-t border-white/10">
+        <button
+          id="toggle-btn"
+          type="button"
+          class="flex-1 py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+        >
+          Start
+        </button>
+        <button
+          id="reset-btn"
+          type="button"
+          class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500"
+        >
+          Reset
+        </button>
+      </div>
+    </section>
+
+    <!-- CARD 2: Today's Tasks -->
+    <section class="relative overflow-hidden card-accent-pink card-vibrate bg-slate-900/80 backdrop-blur-lg border border-white/15 border-t-white/25 hover:border-pink-400/50 shadow-[0_0_25px_rgba(236,72,153,0.18)] hover:shadow-[0_0_35px_rgba(236,72,153,0.38)] rounded-2xl p-6 flex flex-col transition-all duration-300">
+      <h2 class="text-lg font-semibold tracking-tight mb-4">Today's Tasks</h2>
+
+      <form id="task-form" class="flex gap-2 mb-4">
+        <input
+          id="task-input"
+          type="text"
+          placeholder="Add a topic to study..."
+          class="flex-1 bg-slate-950/80 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+          required
+        />
+        <button
+          type="submit"
+          class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        >
+          Add
+        </button>
+      </form>
+
+      <ul id="task-list" class="space-y-2.5 overflow-y-auto max-h-72 pr-1">
+        <li class="flex items-center justify-between gap-3 bg-slate-950/75 border border-white/10 hover:border-white/20 rounded-xl px-3.5 py-2.5 text-sm transition-all duration-200 hover:translate-x-1">
+          <label class="flex items-center gap-2.5 cursor-pointer flex-1">
+            <input type="checkbox" class="rounded accent-indigo-500" />
+            <span class="transition-all duration-200">Revise Tailwind grid & flex</span>
+          </label>
+          <button type="button" class="delete-btn text-xs text-slate-400 hover:text-rose-400 transition">
+            Delete
+          </button>
+        </li>
+      </ul>
+    </section>
+
+  </main>
+
+  <script>
+    const DURATIONS = {
+      focus: 25 * 60,
+      short: 5 * 60,
+      long: 15 * 60
+    };
+
+    const LABELS = {
+      focus: "Focus",
+      short: "Short Break",
+      long: "Long Break"
+    };
+
+    let currentMode = "focus";
+    let remainingSeconds = DURATIONS.focus;
+    let intervalId = null;
+
+    const displayEl = document.getElementById("timer-display");
+    const modeLabelEl = document.getElementById("mode-label");
+    const toggleBtn = document.getElementById("toggle-btn");
+    const resetBtn = document.getElementById("reset-btn");
+    const modeBtns = document.querySelectorAll(".mode-btn");
+    const taskForm = document.getElementById("task-form");
+    const taskInput = document.getElementById("task-input");
+    const taskList = document.getElementById("task-list");
+
+    function formatTime(totalSeconds) {
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = totalSeconds % 60;
+      return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+    }
+
+    function renderTimer() {
+      displayEl.textContent = formatTime(remainingSeconds);
+      modeLabelEl.textContent = LABELS[currentMode];
+      document.title = `${formatTime(remainingSeconds)} • ${LABELS[currentMode]}`;
+    }
+
+    function pauseTimer() {
+      clearInterval(intervalId);
+      intervalId = null;
+      toggleBtn.textContent = "Start";
+      displayEl.classList.remove("animate-pulse");
+    }
+
+    function startTimer() {
+      if (intervalId) return;
+      toggleBtn.textContent = "Pause";
+      displayEl.classList.add("animate-pulse");
+      intervalId = setInterval(() => {
+        if (remainingSeconds > 0) {
+          remainingSeconds -= 1;
+          renderTimer();
+        } else {
+          pauseTimer();
+        }
+      }, 1000);
+    }
+
+    toggleBtn.addEventListener("click", () => {
+      if (intervalId) {
+        pauseTimer();
+      } else {
+        startTimer();
+      }
+    });
+
+    resetBtn.addEventListener("click", () => {
+      pauseTimer();
+      remainingSeconds = DURATIONS[currentMode];
+      renderTimer();
+    });
+
+    modeBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        pauseTimer();
+        currentMode = btn.dataset.mode;
+        remainingSeconds = DURATIONS[currentMode];
+
+        modeBtns.forEach((b) => {
+          b.className = "mode-btn py-2 rounded-lg text-slate-400 hover:text-white transition-all duration-200 active:scale-95";
+        });
+        btn.className = "mode-btn py-2 rounded-lg bg-indigo-600 text-white font-medium transition-all duration-200 active:scale-95";
+
+        renderTimer();
+      });
+    });
+
+    function attachTaskEvents(li) {
+      const checkbox = li.querySelector('input[type="checkbox"]');
+      const textSpan = li.querySelector("span");
+      const deleteBtn = li.querySelector(".delete-btn");
+
+      checkbox.addEventListener("change", () => {
+        textSpan.classList.toggle("line-through", checkbox.checked);
+        textSpan.classList.toggle("text-slate-400", checkbox.checked);
+      });
+
+      deleteBtn.addEventListener("click", () => {
+        li.remove();
+      });
+    }
+
+    document.querySelectorAll("#task-list li").forEach(attachTaskEvents);
+
+    taskForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const text = taskInput.value.trim();
+      if (!text) return;
+
+      const li = document.createElement("li");
+      li.className =
+        "flex items-center justify-between gap-3 bg-slate-950/75 border border-white/10 hover:border-white/20 rounded-xl px-3.5 py-2.5 text-sm transition-all duration-200 hover:translate-x-1";
+      li.innerHTML = `
+        <label class="flex items-center gap-2.5 cursor-pointer flex-1">
+          <input type="checkbox" class="rounded accent-indigo-500" />
+          <span class="transition-all duration-200"></span>
+        </label>
+        <button type="button" class="delete-btn text-xs text-slate-400 hover:text-rose-400 transition">
+          Delete
+        </button>
+      `;
+      li.querySelector("span").textContent = text;
+      attachTaskEvents(li);
+      taskList.appendChild(li);
+
+      taskInput.value = "";
+      taskInput.focus();
+    });
+
+    renderTimer();
+  </script>
+</body>
+</html>
